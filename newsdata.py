@@ -78,7 +78,8 @@ def popular_authors(cursor):
 
 def dooms_day(cursor):
     """Returns day of most errors."""
-    c.execute("""SELECT failed.date, failed.fail, (failed.fail + succeeded.success) AS total
+    c.execute("""SELECT failed.date, failed.fail,
+        (failed.fail + succeeded.success) AS total
     FROM (SELECT DATE(time), count(*) AS fail
     FROM log
     WHERE status != '200 OK'
