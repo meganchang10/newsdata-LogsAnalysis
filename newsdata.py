@@ -18,6 +18,7 @@ c = database.cursor()
 # To write strings in multiple lines, we use the three quotation """x""" method
 # which also allows our editor to pick up on the PSQL command words
 
+
 def create_slugpath_table(cursor):
     """Creates a table that can join the articles and log tables"""
 
@@ -39,8 +40,10 @@ def create_slugpath_table(cursor):
 
         # Do not capitalize PSQL commands here because for some reason does not
         # allow for proper concatenation of slug variable this way
-        c.execute("insert into slugpath (slug,path) values ('" + slug
-            + "','/article/" + slug + "');")
+        c.execute(
+            "insert into slugpath (slug,path) values ('" + slug +
+            "','/article/" + slug + "');")
+
 
 def popular_articles(cursor):
     """Returns top three most viewed articles."""
@@ -59,6 +62,7 @@ def popular_articles(cursor):
     print("")
     return ans
 
+
 def popular_authors(cursor):
     """Counts views each author received on sum of all articles."""
     c.execute("""SELECT authors.name, count(*) AS views
@@ -75,6 +79,7 @@ def popular_authors(cursor):
         print (str(a[0].title()) + " - " + str(a[1]) + " views")
     print("")
     return ans
+
 
 def dooms_day(cursor):
     """Returns day of most errors."""
