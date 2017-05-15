@@ -12,45 +12,28 @@ import psycopg2
 DBNAME = "news"
 
 # Connect to the database and create cursor
-database = psycopg2.connect(database=DBNAME)
-c = database.cursor()
 
+try:
+    database = psycopg2.connect(database=DBNAME)
+    c = database.cursor()
+except:
+    print("""Cannot make connection. Database not found. Make sure you have
+          downloaded it through the zip file provided in the README.md file,
+          and have opened it using the command `psql -d news -f newsdata.sql`
+          executed from the command line inside a virtual machine.""")
 # To write strings in multiple lines, we use the three quotation """x""" method
 # which also allows our editor to pick up on the PSQL command words
 
 
-def create_slugpath_table(cursor):
-    """Creates a table that can join the articles and log tables"""
-
-    c.execute("""CREATE TABLE slugpath (
-        slug TEXT,
-        path TEXT);""")
-
-    # Retrieve slugs to create table
-    c.execute("""SELECT slug
-        FROM articles""")
-    slug_list = c.fetchall()
-
-    for slug in slug_list:
-
-        # Convert tuple into string and extract the slug name since originally
-        # comes in the form of a tuple ('slug-name',)
-        slug = str(slug)
-        slug = slug[2:-3]
-
-        # Do not capitalize PSQL commands here because for some reason does not
-        # allow for proper concatenation of slug variable this way
-        c.execute(
-            "insert into slugpath (slug,path) values ('" + slug +
-            "','/article/" + slug + "');")
+# WHERE log.path LIKE '%' || articles.slug uses general expression to match
+# patterns of strings to each other
 
 
 def popular_articles(cursor):
     """Returns top three most viewed articles."""
     c.execute("""SELECT articles.title, count(*) AS views
-        FROM articles, slugpath, log
-        WHERE articles.slug = slugpath.slug
-        AND log.path = slugpath.path
+        FROM articles, log
+        WHERE log.path LIKE '%' || articles.slug
         GROUP BY articles.title
         ORDER BY views desc
         LIMIT 3;""")
@@ -66,9 +49,8 @@ def popular_articles(cursor):
 def popular_authors(cursor):
     """Counts views each author received on sum of all articles."""
     c.execute("""SELECT authors.name, count(*) AS views
-    FROM articles, slugpath, log, authors
-    WHERE articles.slug = slugpath.slug
-    AND log.path = slugpath.path
+    FROM articles, log, authors
+    WHERE log.path LIKE '%' || articles.slug
     AND articles.author = authors.id
     GROUP BY authors.name
     ORDER BY views DESC;""")
@@ -105,7 +87,6 @@ def dooms_day(cursor):
     print("")
     return ans
 
-create_slugpath_table(c)
 popular_articles(c)
 popular_authors(c)
 dooms_day(c)
